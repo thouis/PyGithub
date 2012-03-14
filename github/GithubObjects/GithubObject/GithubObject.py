@@ -108,6 +108,13 @@ def GithubObject( className, *attributePolicies ):
             doc += "\n"
             return doc
 
+        @classmethod
+        def _dependencyGraph( cls ):
+            dependencies = []
+            for attributePolicy in cls.__attributePolicies:
+                dependencies += attributePolicy.dependencies()
+            return "".join( "    " + cls.__name__ + " -> " + dependency + ";\n" for dependency in set( dependencies ) )
+
     GithubObject.__name__ = className
     GithubObject._addAttributePolicy( SeveralAttributePolicies( attributePolicies ) )
 

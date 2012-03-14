@@ -19,6 +19,9 @@ class ListCapacity:
         else:
             return self.__url
 
+    def dependencies( self ):
+        return self.typePolicy.typeDependencies()
+
 class ElementAddable( ListCapacity ):
     def apply( self, cls ):
         cls._addMethod( "add_to_" + self.safeAttributeName, self.__execute )

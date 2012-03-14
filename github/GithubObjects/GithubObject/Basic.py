@@ -23,6 +23,9 @@ class AttributeFromCallable:
     def autoDocument( self ):
         return ""
 
+    def dependencies( self ):
+        return []
+
 class MethodFromCallable:
     def __init__( self, name, parameters, callable, returnTypePolicy ):
         self.__argumentsChecker = parameters
@@ -46,6 +49,9 @@ class MethodFromCallable:
                 doc += ": " + self.__returnTypePolicy.documentTypeName()
             doc += "\n"
             return doc
+
+    def dependencies( self ):
+        return self.__returnTypePolicy.typeDependencies()
 
 class InternalAttribute:
     class AttributeDefinition:
@@ -82,6 +88,9 @@ class InternalAttribute:
         doc += "\n"
         return doc
 
+    def dependencies( self ):
+        return self.__typePolicy.typeDependencies()
+
 class ExternalAttribute:
     def __init__( self, attributeName, typePolicy ):
         self.__attributeName = attributeName
@@ -98,6 +107,9 @@ class ExternalAttribute:
 
     def autoDocument( self ):
         return "* `get_" + self.__attributeName + "()`: " + self.__typePolicy.documentTypeName() + "\n"
+
+    def dependencies( self ):
+        return self.__typePolicy.typeDependencies()
 
 class SeveralAttributePolicies:
     def __init__( self, attributePolicies, documentationSection = None ):
@@ -116,3 +128,9 @@ class SeveralAttributePolicies:
             doc += "-" * len( self.__documentationSection ) + "\n"
         doc += "".join( attributePolicy.autoDocument() for attributePolicy in self.__attributePolicies )
         return doc
+
+    def dependencies( self ):
+        dependencies = []
+        for attributePolicy in self.__attributePolicies:
+            dependencies += attributePolicy.dependencies()
+        return dependencies

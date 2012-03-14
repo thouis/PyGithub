@@ -11,8 +11,11 @@ class SimpleTypePolicy:
     def hasMeaningfulDocumentation( self ):
         return self.__type is not None
 
-    def documentTypeName( self ):
+    def _documentTypeName( self ):
         return self.__type
+
+    def typeDependencies( self ):
+        return []
 
 class ObjectTypePolicy:
     def __init__( self, type ):
@@ -31,5 +34,8 @@ class ObjectTypePolicy:
     def hasMeaningfulDocumentation( self ):
         return True
 
-    def documentTypeName( self ):
+    def _documentTypeName( self ):
         return "`" + self.__type.__name__ + "`"
+
+    def typeDependencies( self ):
+        return [ self.__type.__name__ ]
