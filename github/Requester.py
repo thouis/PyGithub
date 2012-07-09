@@ -11,9 +11,8 @@
 
 # You should have received a copy of the GNU Lesser General Public License along with PyGithub.  If not, see <http://www.gnu.org/licenses/>.
 
-import httplib
+import requests
 import base64
-import urllib
 
 try:
     import json
@@ -42,27 +41,16 @@ class Requester:
 
     def requestRaw( self, verb, url, parameters, input ):
         assert verb in [ "HEAD", "GET", "POST", "PATCH", "PUT", "DELETE" ]
-        assert url.startswith( "https://api.github.com" )
-        url = url[ len( "https://api.github.com" ) : ]
 
         headers = dict()
         if self.__authorizationHeader is not None:
             headers[ "Authorization" ] = self.__authorizationHeader
 
-        cnx = httplib.HTTPSConnection( "api.github.com", strict = True )
-        cnx.request(
-            verb,
-            self.__completeUrl( url, parameters ),
-            json.dumps( input ),
-            headers
-        )
-        response = cnx.getresponse()
-
-        status = response.status
-        headers = dict( response.getheaders() )
-        output = self.__structuredFromJson( response.read() )
-
-        cnx.close()
+        builder = requests.getattr(verb.lower())
+        response = builder(url=url, params=parameters, headers=headers)
+        status = response.status_code
+        headers = response.headers
+        output = response.json
 
         if "x-ratelimit-remaining" in headers and "x-ratelimit-limit" in headers:
             self.rate_limiting = ( int( headers[ "x-ratelimit-remaining" ] ), int( headers[ "x-ratelimit-limit" ] ) )
@@ -70,14 +58,3 @@ class Requester:
         # print verb, url, parameters, input, "==>", status, str( headers )[ :30 ], str( output )[ :30 ]
         return status, headers, output
 
-    def __completeUrl( self, url, parameters ):
-        if parameters is None or len( parameters ) == 0:
-            return url
-        else:
-            return url + "?" + urllib.urlencode( parameters )
-
-    def __structuredFromJson( self, data ):
-        if len( data ) == 0:
-            return None
-        else:
-            return json.loads( data )
